@@ -34,10 +34,10 @@ if [ "$1" = "c" ]; then
     # # Add the embedded script
     # cp ../../config/init.ipxe .
 
-    # # Configure make
-    # EMBEDDED_MAKE() {
-    #     make EMBED="init.ipxe" -j"$(nproc)" "$@"
-    # }
+    # Configure make
+    EMBEDDED_MAKE() {
+        make -j"$(nproc)" "$@"
+    }
 
     # Configure ccache
     ccache -F 0
