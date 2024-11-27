@@ -18,7 +18,7 @@ if [ "$1" = "c" ]; then
     # We use the latest `master` branch since the release is broken (see https://github.com/ipxe/ipxe/issues/1293),
     # also run `git checkout $(git tag --sort=-v:refname | head -n1)` once there is a release with the fix
 
-    # Enable features
+    # Enable iPXE features
     sed -i -e 's/#undef\tDOWNLOAD_PROTO_HTTPS/#define\tDOWNLOAD_PROTO_HTTPS/g' config/general.h
     sed -i -e 's/\/\/#define PING_CMD/#define PING_CMD/g' config/general.h
     sed -i -e 's/\/\/#define VLAN_CMD/#define VLAN_CMD/g' config/general.h
