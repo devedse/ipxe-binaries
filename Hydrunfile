@@ -35,8 +35,9 @@ if [ "$1" = "c" ]; then
     cp ../../config/init.ipxe .
 
     # Configure make
+    # EMBED="init.ipxe"
     EMBEDDED_MAKE() {
-        make EMBED="init.ipxe" -j"$(nproc)" "$@"
+        make -j"$(nproc)" "$@"
     }
 
     # Configure ccache
