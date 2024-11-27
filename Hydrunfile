@@ -31,12 +31,12 @@ if [ "$1" = "c" ]; then
     sed -i -e 's/\/\/#define CONSOLE_FRAMEBUFFER/#define CONSOLE_FRAMEBUFFER/g' config/console.h
     sed -i -e 's/\/\/#define LOG_LEVEL/#define LOG_LEVEL/g' config/console.h
 
-    # # Add the embedded script
-    # cp ../../config/init.ipxe .
+    # Add the embedded script
+    cp ../../config/init.ipxe .
 
     # Configure make
     EMBEDDED_MAKE() {
-        make -j"$(nproc)" "$@"
+        make EMBED="init.ipxe" -j"$(nproc)" "$@"
     }
 
     # Configure ccache
