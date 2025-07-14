@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         target:
-          # Binaries
+          # Binaries (includes both iPXE and SNP variants)
           - id: c.ipxe
             src: .
             os: debian:bookworm
