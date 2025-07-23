@@ -54,6 +54,10 @@ if [ "$1" = "c" ]; then
     EMBEDDED_MAKE CROSS_COMPILE="ccache arm-linux-gnueabi-" ARCH=arm32 bin-arm32-efi/snp.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache aarch64-linux-gnu-" ARCH=arm64 bin-arm64-efi/snp.efi
     
+    # Build Realtek-specific binaries (10ec:8126)
+    EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/10ec8126.efi
+    EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-x86_64-efi/10ec8126.efi
+    
     # Build SNP and SNP-only variants for x86 architectures
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/snp.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/snponly.efi
@@ -70,6 +74,10 @@ if [ "$1" = "c" ]; then
     cp bin-x86_64-efi/ipxe.efi "$OUTPUT_DIR/ipxe-x86_64.efi"
     cp bin-arm32-efi/snp.efi "$OUTPUT_DIR/ipxe-arm32.efi"
     cp bin-arm64-efi/snp.efi "$OUTPUT_DIR/ipxe-arm64.efi"
+    
+    # Copy Realtek-specific binaries (10ec:8126)
+    cp bin-i386-efi/10ec8126.efi "$OUTPUT_DIR/realtek-10ec8126-i386.efi"
+    cp bin-x86_64-efi/10ec8126.efi "$OUTPUT_DIR/realtek-10ec8126-x86_64.efi"
     
     # Copy SNP variants
     cp bin-i386-efi/snp.efi "$OUTPUT_DIR/snp-i386.efi"
