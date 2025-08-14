@@ -13,7 +13,7 @@ if [ "$1" = "c" ]; then
 
     # Get latest iPXE release
     rm -rf ipxe
-    git clone https://github.com/ipxe/ipxe.git
+    git clone https://github.com/devedse/ipxe.git
     cd ipxe/src
     # We use the latest `master` branch since the release is broken (see https://github.com/ipxe/ipxe/issues/1293),
     # also run `git checkout $(git tag --sort=-v:refname | head -n1)` once there is a release with the fix
@@ -31,6 +31,7 @@ if [ "$1" = "c" ]; then
     sed -i -e 's/\/\/#define PCI_CMD/#define PCI_CMD/g' config/general.h
     sed -i -e 's/\/\/#define CONSOLE_FRAMEBUFFER/#define CONSOLE_FRAMEBUFFER/g' config/console.h
     sed -i -e 's/\/\/#define LOG_LEVEL/#define LOG_LEVEL/g' config/console.h
+    sed -i -e 's/\/\/#define PNPLIST_CMD/#define PNPLIST_CMD/g' config/general.h
 
     # Add the embedded script
     cp ../../config/init.ipxe .
