@@ -29,9 +29,9 @@ if [ "$1" = "c" ]; then
     sed -i -e 's/\/\/#define\s*IMAGE_PNG/#define IMAGE_PNG/g' config/general.h
     sed -i -e 's/\/\/#define\s*CONSOLE_CMD/#define CONSOLE_CMD/g' config/general.h
     sed -i -e 's/\/\/#define\s*PCI_CMD/#define PCI_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\s*USB_CMD/#define USB_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\s*FDT_CMD/#define FDT_CMD/g' config/general.h
-    #sed -i -e 's/\/\/#define\s*CONSOLE_FRAMEBUFFER/#define\tCONSOLE_FRAMEBUFFER/g' config/console.h
+    # sed -i -e 's/\/\/#define\s*USB_CMD/#define USB_CMD/g' config/general.h
+    # sed -i -e 's/\/\/#define\s*FDT_CMD/#define FDT_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define\s*CONSOLE_FRAMEBUFFER/#define\tCONSOLE_FRAMEBUFFER/g' config/console.h
     sed -i -e 's/\/\/#define\s*LOG_LEVEL/#define LOG_LEVEL/g' config/console.h
     sed -i -e 's/\/\/#define\s*PNPLIST_CMD/#define PNPLIST_CMD/g' config/general.h
 
