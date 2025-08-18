@@ -43,7 +43,7 @@ EOF
     # Configure make with named configuration
     # EMBED="init.ipxe"
     EMBEDDED_MAKE() {
-        make -j"$(nproc)" "$@"
+        make -j"$(nproc)" CONFIG=customconfig.h "$@"
     }
 
     # Configure ccache
