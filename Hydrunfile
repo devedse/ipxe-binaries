@@ -17,11 +17,8 @@ if [ "$1" = "c" ]; then
     cd ipxe/src
     # We use the copilot/fix-1 branch
 
-    # Create named configuration directory
-    mkdir -p config/custom
-
-    # Create custom general.h configuration
-    cat > config/custom/general.h << 'EOF'
+    # Create custom configuration
+    cat > config/customconfig.h << 'EOF'
 #define DOWNLOAD_PROTO_HTTPS
 #define PING_CMD
 #define VLAN_CMD
@@ -35,10 +32,7 @@ if [ "$1" = "c" ]; then
 #define USB_CMD
 #define FDT_CMD
 #define PNPLIST_CMD
-EOF
 
-    # Create custom console.h configuration
-    cat > config/custom/console.h << 'EOF'
 #define CONSOLE_FRAMEBUFFER
 #define LOG_LEVEL LOG_ALL
 EOF
@@ -49,7 +43,7 @@ EOF
     # Configure make with named configuration
     # EMBED="init.ipxe"
     EMBEDDED_MAKE() {
-        make -j"$(nproc)" CONFIG=custom "$@"
+        make -j"$(nproc)" "$@"
     }
 
     # Configure ccache
