@@ -13,7 +13,8 @@ if [ "$1" = "c" ]; then
 
     # Get latest iPXE release
     rm -rf ipxe
-    git clone --branch copilot/fix-1 https://github.com/devedse/ipxe.git
+    git clone https://github.com/ipxe/ipxe.git
+    #--branch copilot/fix-1
     cd ipxe/src
     # We use the copilot/fix-1 branch
 
