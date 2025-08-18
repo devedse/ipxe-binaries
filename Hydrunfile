@@ -19,20 +19,20 @@ if [ "$1" = "c" ]; then
 
     # Enable features
     sed -i -e 's/#undef\tDOWNLOAD_PROTO_HTTPS/#define\tDOWNLOAD_PROTO_HTTPS/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+PING_CMD/#define PING_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+VLAN_CMD/#define VLAN_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+REBOOT_CMD/#define REBOOT_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+POWEROFF_CMD/#define POWEROFF_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+NSLOOKUP_CMD/#define NSLOOKUP_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+IPSTAT_CMD/#define IPSTAT_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+IMAGE_PNG/#define IMAGE_PNG/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+CONSOLE_CMD/#define CONSOLE_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+PCI_CMD/#define PCI_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+USB_CMD/#define USB_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+FDT_CMD/#define FDT_CMD/g' config/general.h
-    sed -i -e 's/\/\/#define\\s+CONSOLE_FRAMEBUFFER/#define\tCONSOLE_FRAMEBUFFER/g' config/console.h
-    sed -i -e 's/\/\/#define\\s+LOG_LEVEL/#define LOG_LEVEL/g' config/console.h
-    sed -i -e 's/\/\/#define\\s+PNPLIST_CMD/#define PNPLIST_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define PING_CMD/#define PING_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define VLAN_CMD/#define VLAN_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define REBOOT_CMD/#define REBOOT_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define POWEROFF_CMD/#define POWEROFF_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define NSLOOKUP_CMD/#define NSLOOKUP_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define IPSTAT_CMD/#define IPSTAT_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define IMAGE_PNG/#define IMAGE_PNG/g' config/general.h
+    sed -i -e 's/\/\/#define CONSOLE_CMD/#define CONSOLE_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define PCI_CMD/#define PCI_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define USB_CMD/#define USB_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define FDT_CMD/#define FDT_CMD/g' config/general.h
+    sed -i -e 's/\/\/#define\sCONSOLE_FRAMEBUFFER/#define\tCONSOLE_FRAMEBUFFER/g' config/console.h
+    sed -i -e 's/\/\/#define LOG_LEVEL/#define LOG_LEVEL/g' config/console.h
+    sed -i -e 's/\/\/#define PNPLIST_CMD/#define PNPLIST_CMD/g' config/general.h
 
     # Add the embedded script
     cp ../../config/init.ipxe .
