@@ -13,10 +13,9 @@ if [ "$1" = "c" ]; then
 
     # Get latest iPXE release
     rm -rf ipxe
-    git clone https://github.com/ipxe/ipxe.git
-    #--branch copilot/fix-1
+    git clone https://github.com/devedse/ipxe.git --branch feature/force-cdrom-option
     cd ipxe/src
-    # We use the copilot/fix-1 branch
+    # We use the feature/force-cdrom-option branch
 
     # Enable features
     sed -i -e 's/#undef\tDOWNLOAD_PROTO_HTTPS/#define\tDOWNLOAD_PROTO_HTTPS/g' config/general.h
