@@ -13,7 +13,7 @@ if [ "$1" = "c" ]; then
 
     # Get latest iPXE release
     rm -rf ipxe
-    git clone https://github.com/devedse/ipxe.git --branch feature/force-cdrom-option
+    git clone https://github.com/devedse/ipxe.git --branch copilot/fix-1
     cd ipxe/src
     # We use the feature/force-cdrom-option branch
 
