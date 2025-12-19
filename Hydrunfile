@@ -55,8 +55,8 @@ if [ "$1" = "c" ]; then
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-pcbios/ipxe.kpxe
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/ipxe.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-x86_64-efi/ipxe.efi
-    EMBEDDED_MAKE CROSS_COMPILE="ccache arm-linux-gnueabi-" ARCH=arm32 bin-arm32-efi/snp.efi
-    EMBEDDED_MAKE CROSS_COMPILE="ccache aarch64-linux-gnu-" ARCH=arm64 bin-arm64-efi/snp.efi
+    # EMBEDDED_MAKE CROSS_COMPILE="ccache arm-linux-gnueabi-" ARCH=arm32 bin-arm32-efi/snp.efi
+    # EMBEDDED_MAKE CROSS_COMPILE="ccache aarch64-linux-gnu-" ARCH=arm64 bin-arm64-efi/snp.efi
     
     # # Build Realtek-specific binaries (10ec:8126)
     # EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/10ec8126.efi
@@ -67,8 +67,8 @@ if [ "$1" = "c" ]; then
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/snponly.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-x86_64-efi/snp.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-x86_64-efi/snponly.efi
-    EMBEDDED_MAKE CROSS_COMPILE="ccache arm-linux-gnueabi-" ARCH=arm32 bin-arm32-efi/snponly.efi
-    EMBEDDED_MAKE CROSS_COMPILE="ccache aarch64-linux-gnu-" ARCH=arm64 bin-arm64-efi/snponly.efi
+    # EMBEDDED_MAKE CROSS_COMPILE="ccache arm-linux-gnueabi-" ARCH=arm32 bin-arm32-efi/snponly.efi
+    # EMBEDDED_MAKE CROSS_COMPILE="ccache aarch64-linux-gnu-" ARCH=arm64 bin-arm64-efi/snponly.efi
 
     # Output files directly to the final directory
     OUTPUT_DIR="../../out"
@@ -76,8 +76,8 @@ if [ "$1" = "c" ]; then
     cp bin-i386-pcbios/ipxe.kpxe "$OUTPUT_DIR/ipxe-i386.kpxe"
     cp bin-i386-efi/ipxe.efi "$OUTPUT_DIR/ipxe-i386.efi"
     cp bin-x86_64-efi/ipxe.efi "$OUTPUT_DIR/ipxe-x86_64.efi"
-    cp bin-arm32-efi/snp.efi "$OUTPUT_DIR/ipxe-arm32.efi"
-    cp bin-arm64-efi/snp.efi "$OUTPUT_DIR/ipxe-arm64.efi"
+    # cp bin-arm32-efi/snp.efi "$OUTPUT_DIR/ipxe-arm32.efi"
+    # cp bin-arm64-efi/snp.efi "$OUTPUT_DIR/ipxe-arm64.efi"
     
     # # Copy Realtek-specific binaries (10ec:8126)
     # cp bin-i386-efi/10ec8126.efi "$OUTPUT_DIR/realtek-10ec8126-i386.efi"
@@ -88,8 +88,8 @@ if [ "$1" = "c" ]; then
     cp bin-i386-efi/snponly.efi "$OUTPUT_DIR/snponly-i386.efi"
     cp bin-x86_64-efi/snp.efi "$OUTPUT_DIR/snp-x86_64.efi"
     cp bin-x86_64-efi/snponly.efi "$OUTPUT_DIR/snponly-x86_64.efi"
-    cp bin-arm32-efi/snponly.efi "$OUTPUT_DIR/snponly-arm32.efi"
-    cp bin-arm64-efi/snponly.efi "$OUTPUT_DIR/snponly-arm64.efi"
+    # cp bin-arm32-efi/snponly.efi "$OUTPUT_DIR/snponly-arm32.efi"
+    # cp bin-arm64-efi/snponly.efi "$OUTPUT_DIR/snponly-arm64.efi"
 
     # Get ccache stats
     ccache -s
