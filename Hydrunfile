@@ -6,13 +6,7 @@ set -e
 if [ "$1" = "c" ]; then
     # Install native dependencies
     apt update
-    apt install -y git make build-essential liblzma-dev gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu ccache gcc-10 g++-10
-    
-    # Use GCC 10 which doesn't have the strict array-bounds checking
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
-    update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-10 100
-    update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 100
+    apt install -y git make build-essential liblzma-dev gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu ccache
 
     # Configure Git
     git config --global --add safe.directory '*'
@@ -47,7 +41,7 @@ if [ "$1" = "c" ]; then
     # Configure make
     # EMBED="init.ipxe"
     EMBEDDED_MAKE() {
-        make -j"$(nproc)" "$@"
+        make -j"$(nproc)" NO_WERROR=1 "$@"
     }
 
     # Configure ccache
