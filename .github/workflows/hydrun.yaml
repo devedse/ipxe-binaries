@@ -164,7 +164,7 @@ jobs:
           
           # Build custom LockDown.efi
           # Note: This requires the efitools source and compilation
-          sudo apt-get install -y git build-essential gnu-efi libfile-slurp-perl
+          sudo apt-get install -y git build-essential gnu-efi libfile-slurp-perl help2man
           git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git
           cd efitools
           
