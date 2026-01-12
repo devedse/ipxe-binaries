@@ -56,7 +56,7 @@ jobs:
           sudo install /tmp/hydrun /usr/local/bin
       - name: Build with hydrun
         working-directory: ${{ matrix.target.src }}
-        run: hydrun -o ${{ matrix.target.os }} ${{ matrix.target.flags }} "${{ matrix.target.cmd }}"
+        run: hydrun -o ${{ matrix.target.os }} ${{ matrix.target.flags }} -e SECUREBOOT_DB_KEY="$SECUREBOOT_DB_KEY" -e SECUREBOOT_DB_CRT="$SECUREBOOT_DB_CRT" "${{ matrix.target.cmd }}"
         env:
           SECUREBOOT_DB_KEY: ${{ secrets.SECUREBOOT_DB_KEY }}
           SECUREBOOT_DB_CRT: ${{ secrets.SECUREBOOT_DB_CRT }}
