@@ -146,6 +146,22 @@ jobs:
           
           echo "✓ Authenticated variable files created"
           
+          # Create output directory
+          mkdir -p out
+          
+          # Debug: Check if extraction worked
+          echo "Checking efitools-extracted directory:"
+          ls -la efitools-extracted/
+          if [ -d "efitools-extracted/usr/share/efitools/efi" ]; then
+            echo "EFI tools directory exists:"
+            ls -la efitools-extracted/usr/share/efitools/efi/
+          else
+            echo "ERROR: efitools-extracted/usr/share/efitools/efi does not exist!"
+            echo "Contents of efitools-extracted:"
+            find efitools-extracted/
+            exit 1
+          fi
+          
           # Sign standard UEFI tools
           sbsign --key DB.key --cert DB.crt --output out/KeyTool-signed.efi efitools-extracted/usr/share/efitools/efi/KeyTool.efi
           sbsign --key DB.key --cert DB.crt --output out/HashTool-signed.efi efitools-extracted/usr/share/efitools/efi/HashTool.efi
