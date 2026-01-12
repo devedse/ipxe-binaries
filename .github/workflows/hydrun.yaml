@@ -20,7 +20,8 @@ jobs:
       uses: onyxmueller/build-tag-number@v1
       with:
         token: ${{secrets.GITHUB_TOKEN}}
-  build-linux:
+  
+  build-ipxe:
     needs: generate_version_number
     runs-on: ${{ matrix.target.runner }}
     permissions:
@@ -60,6 +61,27 @@ jobs:
         env:
           SECUREBOOT_DB_KEY: ${{ secrets.SECUREBOOT_DB_KEY }}
           SECUREBOOT_DB_CRT: ${{ secrets.SECUREBOOT_DB_CRT }}
+      - name: Fix permissions for output
+        run: sudo chown -R $USER .
+      - name: Save ccache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /tmp/ccache
+          key: cache-ccache-${{ matrix.target.id }}
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.id }}
+          path: ${{ matrix.target.dst }}
+
+  build-uefi-tools:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Build and sign UEFI tools
         run: |
           # Download and extract efitools
@@ -217,22 +239,16 @@ jobs:
           SECUREBOOT_PK_KEY: ${{ secrets.SECUREBOOT_PK_KEY }}
           SECUREBOOT_PK_CRT: ${{ secrets.SECUREBOOT_PK_CRT }}
           SECUREBOOT_GUID: ${{ secrets.SECUREBOOT_GUID }}
-      - name: Fix permissions for output
-        run: sudo chown -R $USER .
-      - name: Save ccache
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            /tmp/ccache
-          key: cache-ccache-${{ matrix.target.id }}
-      - name: Upload output
+      - name: Upload UEFI tools
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target.id }}
-          path: ${{ matrix.target.dst }}
+          name: uefi-tools
+          path: |
+            out/*.efi
+            out/certificates/
 
   release_github:
-    needs: [generate_version_number, build-linux]
+    needs: [generate_version_number, build-ipxe, build-uefi-tools]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
