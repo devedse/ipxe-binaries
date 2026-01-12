@@ -42,6 +42,18 @@ openssl x509 -outform DER -in PK.crt -out PK.cer
 openssl x509 -outform DER -in KEK.crt -out KEK.cer
 openssl x509 -outform DER -in DB.crt -out DB.cer
 
+# 5. Generate EFI Signature Lists (.esl files)
+echo "[5/6] Generating EFI Signature Lists (.esl)..."
+cert-to-efi-sig-list -g "$GUID" PK.crt PK.esl
+cert-to-efi-sig-list -g "$GUID" KEK.crt KEK.esl
+cert-to-efi-sig-list -g "$GUID" DB.crt DB.esl
+
+# 6. Generate authenticated variables (.auth files)
+echo "[6/6] Generating authenticated variables (.auth)..."
+sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt PK PK.esl PK.auth
+sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
+sign-efi-sig-list -g "$GUID" -k KEK.key -c KEK.crt db DB.esl DB.auth
+
 echo ""
 echo "✓ Keys generated successfully!"
 echo ""
@@ -179,6 +191,8 @@ echo "  - DB.key, DB.crt (for signing binaries)"
 echo "  - KEK.key, KEK.crt (Key Exchange Key)"
 echo "  - PK.key, PK.crt (Platform Key)"
 echo "  - *.cer (DER format certificates)"
+echo "  - *.esl (EFI Signature Lists)"
+echo "  - *.auth (Authenticated variables for KeyTool)"
 echo "  - github-secrets.txt (secrets for GitHub Actions)"
 echo "  2. Never commit these files to version control"
 echo "  3. The DB.key/DB.crt will be used for signing binaries"
