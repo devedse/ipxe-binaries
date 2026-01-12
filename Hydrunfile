@@ -93,5 +93,68 @@ if [ "$1" = "c" ]; then
     # Get ccache stats
     ccache -s
 
+    # Sign binaries if signing keys are available
+    if [ -n "$SECUREBOOT_DB_KEY" ] && [ -n "$SECUREBOOT_DB_CRT" ]; then
+        echo ""
+        echo "==================================="
+        echo "Signing EFI binaries for Secure Boot"
+        echo "==================================="
+        echo ""
+        
+        # Install sbsigntool
+        apt install -y sbsigntool
+        
+        # Restore signing keys from environment variables
+        cd "$OUTPUT_DIR"
+        echo "$SECUREBOOT_DB_KEY" | base64 -d > DB.key
+        echo "$SECUREBOOT_DB_CRT" | base64 -d > DB.crt
+        
+        # Function to sign a binary
+        sign_binary() {
+            local file="$1"
+            local base_name=$(basename "$file")
+            
+            if [ ! -f "$file" ]; then
+                echo "⚠️  Skipping $base_name (file not found)"
+                return
+            fi
+            
+            echo "→ Signing $base_name..."
+            
+            # Create backup
+            cp "$file" "${file}.unsigned"
+            
+            # Sign the binary
+            sbsign --key DB.key --cert DB.crt --output "$file" "${file}.unsigned"
+            
+            echo "  ✓ Signed successfully"
+        }
+        
+        # Sign all EFI binaries
+        sign_binary "ipxe-i386.efi"
+        sign_binary "ipxe-x86_64.efi"
+        sign_binary "ipxe-arm32.efi"
+        sign_binary "ipxe-arm64.efi"
+        sign_binary "snp-i386.efi"
+        sign_binary "snp-x86_64.efi"
+        sign_binary "snponly-i386.efi"
+        sign_binary "snponly-x86_64.efi"
+        sign_binary "snponly-arm32.efi"
+        sign_binary "snponly-arm64.efi"
+        
+        # Clean up keys
+        rm -f DB.key DB.crt
+        
+        echo ""
+        echo "✓ All EFI binaries signed successfully!"
+        echo "  Note: .kpxe files not signed (BIOS/legacy boot)"
+        echo ""
+    else
+        echo ""
+        echo "⚠️  Skipping binary signing (SECUREBOOT_DB_KEY/SECUREBOOT_DB_CRT not set)"
+        echo "   To enable signing, set these environment variables with base64-encoded keys"
+        echo ""
+    fi
+
     exit 0
 fi
