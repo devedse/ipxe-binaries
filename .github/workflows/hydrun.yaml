@@ -60,6 +60,163 @@ jobs:
         env:
           SECUREBOOT_DB_KEY: ${{ secrets.SECUREBOOT_DB_KEY }}
           SECUREBOOT_DB_CRT: ${{ secrets.SECUREBOOT_DB_CRT }}
+      - name: Build and sign UEFI tools
+        run: |
+          # Download and extract efitools
+          apt-get update
+          apt-get download efitools
+          dpkg-deb -x efitools_*.deb efitools-extracted
+          
+          # Install required tools
+          apt-get install -y sbsigntool efitools uuid-runtime
+          
+          # Decode signing keys and certificates
+          echo "$SECUREBOOT_DB_KEY" | base64 -d > DB.key
+          echo "$SECUREBOOT_DB_CRT" | base64 -d > DB.crt
+          
+          # Check if we have separate KEK and PK, otherwise use DB for all (simplified setup)
+          if [ -n "$SECUREBOOT_KEK_KEY" ] && [ -n "$SECUREBOOT_PK_KEY" ]; then
+            echo "$SECUREBOOT_KEK_KEY" | base64 -d > KEK.key
+            echo "$SECUREBOOT_KEK_CRT" | base64 -d > KEK.crt
+            echo "$SECUREBOOT_PK_KEY" | base64 -d > PK.key
+            echo "$SECUREBOOT_PK_CRT" | base64 -d > PK.crt
+            echo "Using separate PK, KEK, and DB keys"
+          else
+            cp DB.key KEK.key
+            cp DB.crt KEK.crt
+            cp DB.key PK.key
+            cp DB.crt PK.crt
+            echo "Using DB key for PK, KEK, and DB (simplified setup)"
+          fi
+          
+          # Generate GUID (we'll use the same one as in the secret)
+          GUID="$SECUREBOOT_GUID"
+          
+          # Convert PEM certificates to DER format
+          openssl x509 -outform DER -in DB.crt -out DB.cer
+          
+          # We need to create KEK and PK from DB (simplified approach - using same cert for all)
+          # In production, you'd have separate KEK and PK from the key generation
+          cp DB.cer KEK.cer
+          cp DB.cer PK.cer
+          cp DB.key KEK.key
+          cp DB.key PK.key
+          cp DB.crt KEK.crt
+          cp DB.crt PK.crt
+          
+          # Create EFI Signature Lists (.esl files)
+          cert-to-efi-sig-list -g "$GUID" PK.cer PK.esl
+          cert-to-efi-sig-list -g "$GUID" KEK.cer KEK.esl
+          cert-to-efi-sig-list -g "$GUID" DB.cer DB.esl
+          
+          # Create authenticated variables (.auth files)
+          # PK must be self-signed
+          sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt PK PK.esl PK.auth
+          
+          # KEK is signed by PK
+          sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
+          
+          # DB is signed by KEK
+          sign-efi-sig-list -g "$GUID" -k KEK.key -c KEK.crt db DB.esl DB.auth
+          
+          # Create noPK.auth for removing PK (useful for testing)
+          sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt PK /dev/null noPK.auth
+          
+          echo "✓ Authenticated variable files created"
+          
+          # Sign standard UEFI tools
+          sbsign --key DB.key --cert DB.crt --output out/KeyTool-signed.efi efitools-extracted/usr/share/efitools/efi/KeyTool.efi
+          sbsign --key DB.key --cert DB.crt --output out/HashTool-signed.efi efitools-extracted/usr/share/efitools/efi/HashTool.efi
+          sbsign --key DB.key --cert DB.crt --output out/ReadVars-signed.efi efitools-extracted/usr/share/efitools/efi/ReadVars.efi
+          
+          # For LockDown, we need to build a custom one with our keys embedded
+          # Create a directory with our key files
+          mkdir -p lockdown-keys
+          cp PK.auth lockdown-keys/
+          cp KEK.auth lockdown-keys/
+          cp DB.auth lockdown-keys/
+          cp noPK.auth lockdown-keys/
+          
+          # Build custom LockDown.efi
+          # Note: This requires the efitools source and compilation
+          apt-get install -y git build-essential gnu-efi
+          git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git
+          cd efitools
+          
+          # Copy our auth files to the efitools directory
+          cp ../lockdown-keys/*.auth .
+          
+          # Build LockDown with our keys
+          make ENABLE_LOCKDOWN=1
+          
+          # Sign the custom LockDown.efi
+          cd ..
+          sbsign --key DB.key --cert DB.crt --output out/LockDown-signed.efi efitools/LockDown.efi
+          
+          echo "✓ Custom LockDown.efi built and signed"
+          
+          # Create certificate package for users
+          mkdir -p out/certificates
+          cp DB.cer out/certificates/
+          cp DB.crt out/certificates/
+          cp KEK.cer out/certificates/
+          cp PK.cer out/certificates/
+          
+          # Also include the .auth files for advanced users
+          mkdir -p out/certificates/auth-files
+          cp lockdown-keys/*.auth out/certificates/auth-files/
+          
+          # Create README for certificate package
+          cat > out/certificates/README.txt << 'EOF'
+          Secure Boot Certificate Package
+          ================================
+          
+          This package contains the certificates needed to trust the signed iPXE binaries.
+          
+          Files included:
+          - DB.cer  - Database certificate (enroll this for basic usage)
+          - KEK.cer - Key Exchange Key certificate
+          - PK.cer  - Platform Key certificate
+          - DB.crt  - Database certificate in PEM format (for verification)
+          - auth-files/ - Pre-signed authenticated variables for advanced enrollment
+          
+          Quick Start (Recommended):
+          --------------------------
+          1. Use KeyTool-signed.efi to interactively add DB.cer to your firmware
+          2. This allows iPXE binaries to boot while keeping Microsoft keys
+          
+          Advanced (Full Key Replacement):
+          ---------------------------------
+          1. Put Secure Boot in "Setup Mode" via firmware settings
+          2. Boot LockDown-signed.efi from USB
+          3. This will install ALL keys and lock down Secure Boot
+          4. WARNING: Windows will NOT boot after this!
+          
+          For detailed instructions, see: SECURE-BOOT-SETUP.md
+          EOF
+          
+          # Create an info file about what was generated
+          cat > out/certificates/GENERATED.txt << EOF
+          Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          GUID: $GUID
+          Certificate validity: 100 years from generation date
+          
+          All .efi files in this release are signed with DB.key
+          LockDown-signed.efi contains embedded PK, KEK, and DB certificates
+          EOF
+          
+          # Clean up keys
+          rm -f DB.key DB.crt KEK.key KEK.crt PK.key PK.crt
+          
+          echo "✓ UEFI tools built, signed, and certificates packaged successfully"
+        env:
+          SECUREBOOT_DB_KEY: ${{ secrets.SECUREBOOT_DB_KEY }}
+          SECUREBOOT_DB_CRT: ${{ secrets.SECUREBOOT_DB_CRT }}
+          SECUREBOOT_KEK_KEY: ${{ secrets.SECUREBOOT_KEK_KEY }}
+          SECUREBOOT_KEK_CRT: ${{ secrets.SECUREBOOT_KEK_CRT }}
+          SECUREBOOT_PK_KEY: ${{ secrets.SECUREBOOT_PK_KEY }}
+          SECUREBOOT_PK_CRT: ${{ secrets.SECUREBOOT_PK_CRT }}
+          SECUREBOOT_GUID: ${{ secrets.SECUREBOOT_GUID }}
       - name: Fix permissions for output
         run: sudo chown -R $USER .
       - name: Save ccache

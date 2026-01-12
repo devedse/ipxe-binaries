@@ -154,6 +154,25 @@ The keys generated are valid for 100 years (36500 days). Before expiration:
 3. Enroll new certificates on all target machines
 4. Update GitHub Actions secrets
 
+## What's Included in Each Release
+
+### iPXE Binaries (Signed)
+- `ipxe-*.efi` files for all architectures (i386, x86_64, arm32, arm64)
+- `snp-*.efi` and `snponly-*.efi` variants
+- `ipxe-i386.kpxe` (BIOS - unsigned)
+- `.unsigned` backup files
+
+### UEFI Management Tools (Signed)
+- **KeyTool-signed.efi** - GUI for managing keys (easiest option)
+- **LockDown-signed.efi** - Bulk key replacement (⚠️ breaks Windows!)
+- **HashTool-signed.efi** - Manage hash allow/deny lists
+- **ReadVars-signed.efi** - View enrolled keys
+
+### Certificate Package
+- `certificates/DB.cer` - Enroll this in your firmware
+- `certificates/DB.crt` - For signature verification
+- `certificates/README.txt` - Quick start guide
+
 ## Security Best Practices
 
 1. **Never commit keys to version control** - Always use GitHub Actions secrets
