@@ -25,19 +25,19 @@ echo "Generated GUID: $GUID"
 echo ""
 
 # 1. Generate Platform Key (PK)
-echo "[1/4] Generating Platform Key (PK)..."
+echo "[1/6] Generating Platform Key (PK)..."
 openssl req -new -x509 -newkey rsa:2048 -subj "/CN=iPXE Platform Key/" -keyout PK.key -out PK.crt -days 36500 -nodes -sha256
 
 # 2. Generate Key Exchange Key (KEK)
-echo "[2/4] Generating Key Exchange Key (KEK)..."
+echo "[2/6] Generating Key Exchange Key (KEK)..."
 openssl req -new -x509 -newkey rsa:2048 -subj "/CN=iPXE Key Exchange Key/" -keyout KEK.key -out KEK.crt -days 36500 -nodes -sha256
 
 # 3. Generate Signature Database key (DB)
-echo "[3/4] Generating Signature Database key (DB)..."
+echo "[3/6] Generating Signature Database key (DB)..."
 openssl req -new -x509 -newkey rsa:2048 -subj "/CN=iPXE Signature Database key/" -keyout DB.key -out DB.crt -days 36500 -nodes -sha256
 
 # 4. Generate the DER format certificates
-echo "[4/4] Converting to DER format..."
+echo "[4/6] Converting to DER format..."
 openssl x509 -outform DER -in PK.crt -out PK.cer
 openssl x509 -outform DER -in KEK.crt -out KEK.cer
 openssl x509 -outform DER -in DB.crt -out DB.cer
@@ -48,9 +48,14 @@ cert-to-efi-sig-list -g "$GUID" PK.crt PK.esl
 cert-to-efi-sig-list -g "$GUID" KEK.crt KEK.esl
 cert-to-efi-sig-list -g "$GUID" DB.crt DB.esl
 
+# Create empty noPK.esl for Setup Mode recovery
+rm -f noPK.esl
+touch noPK.esl
+
 # 6. Generate authenticated variables (.auth files)
 echo "[6/6] Generating authenticated variables (.auth)..."
 sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt PK PK.esl PK.auth
+sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt PK noPK.esl noPK.auth
 sign-efi-sig-list -g "$GUID" -k PK.key -c PK.crt KEK KEK.esl KEK.auth
 sign-efi-sig-list -g "$GUID" -k KEK.key -c KEK.crt db DB.esl DB.auth
 
@@ -190,28 +195,39 @@ echo "Files generated:"
 echo "  - DB.key, DB.crt (for signing binaries)"
 echo "  - KEK.key, KEK.crt (Key Exchange Key)"
 echo "  - PK.key, PK.crt (Platform Key)"
-echo "  - *.cer (DER format certificates)"
-echo "  - *.esl (EFI Signature Lists)"
-echo "  - *.auth (Authenticated variables for KeyTool)"
+echo "  - *.cer (DER format certificates for firmware)"
+echo "  - *.esl (EFI Signature Lists for KeyTool)"
+echo "  - *.auth (Authenticated variables for KeyTool/firmware)"
+echo "  - noPK.auth (for returning to Setup Mode)"
+echo "  - myGUID.txt (GUID used in all files: $GUID)"
 echo "  - github-secrets.txt (secrets for GitHub Actions)"
+echo ""
+echo "⚠️  SECURITY WARNING:"
+echo "  1. NEVER share .key files (private keys)"
 echo "  2. Never commit these files to version control"
 echo "  3. The DB.key/DB.crt will be used for signing binaries"
-echo "  4. The .cer files are needed for creating LockDown.efi for key enrollment"
+echo "  4. The .cer/.esl/.auth files are used for key enrollment"
 echo ""
 echo "==================================="
 echo "Next Steps"
 echo "==================================="
 echo ""
 echo "1. Add the secrets shown above to your GitHub repository"
+echo "   (Settings → Secrets and variables → Actions → New repository secret)"
 echo ""
-echo "2. Store the entire directory securely (backup):"
+echo "2. Store the entire directory securely (encrypted backup):"
 echo "   cd .."
 echo "   tar czf ${KEY_DIR}.tar.gz ${KEY_DIR}"
+echo "   gpg -c ${KEY_DIR}.tar.gz  # Encrypt with password"
 echo ""
-echo "3. Update your CI/CD pipeline to use these secrets for signing"
+echo "3. For client PC enrollment, copy these files to TFTP/USB:"
+echo "   - DB.cer, KEK.cer, PK.cer (for firmware key managers)"
+echo "   - DB.esl, KEK.esl, PK.esl (for KeyTool)"
+echo "   - DB.auth, KEK.auth, PK.auth (for KeyTool in User Mode)"
+echo "   - noPK.auth (to reset to Setup Mode if needed)"
 echo ""
-echo "4. To create LockDown.efi for enrolling keys on machines, follow:"
-echo "   https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html#creatingkeys"
+echo "4. Your CI/CD pipeline will use SECUREBOOT_DB_KEY/CRT for signing"
 echo ""
-echo "5. Keep this directory until you've backed up the keys!"
+echo "5. To add Microsoft keys to LockDown, see:"
+echo "   ../tftp/CLIENT-PC-SETUP-SUMMARY.txt"
 echo ""
