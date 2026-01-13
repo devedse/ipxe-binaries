@@ -177,6 +177,17 @@ jobs:
           cp ../PK.esl .
           cp ../KEK-ipxe.esl KEK.esl
           cp ../DB-ipxe.esl DB.esl
+
+          # Fix: Also copy certificates/keys so efitools Makefile doesn't regenerate them (and overwrite our Custom ESLs)
+          cp ../PK.crt .
+          cp ../PK.key .
+          cp ../KEK.crt .
+          cp ../KEK.key .
+          cp ../DB.crt .
+          cp ../DB.key .
+          
+          # Fix: Ensure ESL files have newer timestamps than CRTs so make treats them as up-to-date
+          touch PK.esl KEK.esl DB.esl
           
           # Build LockDown with embedded .esl files
           make ENABLE_LOCKDOWN=1
