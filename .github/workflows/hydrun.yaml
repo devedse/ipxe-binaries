@@ -173,23 +173,30 @@ jobs:
           git clone --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git
           cd efitools
           
-          # Copy our .esl files to efitools directory
-          cp ../PK.esl .
-          cp ../KEK-ipxe.esl KEK.esl
-          cp ../DB-ipxe.esl DB.esl
+          # 1. Pre-build the tools to ensure they are older than our injected files
+          # This prevents Make from thinking the tools changed and regenerating the ESLs
+          make cert-to-efi-sig-list sign-efi-sig-list
 
-          # Fix: Also copy certificates/keys so efitools Makefile doesn't regenerate them (and overwrite our Custom ESLs)
+          # 2. Copy certificates/keys (needed as dependencies) & Set timestamps to the past
+          # We need them present so Make doesn't complain, but OLD so Make doesn't rebuild ESLs
           cp ../PK.crt .
           cp ../PK.key .
           cp ../KEK.crt .
           cp ../KEK.key .
           cp ../DB.crt .
           cp ../DB.key .
+          touch -d "2 hours ago" *.crt *.key
+
+          # 3. Copy our Custom/Hybrid ESL files
+          cp ../PK.esl .
+          cp ../KEK-ipxe.esl KEK.esl
+          cp ../DB-ipxe.esl DB.esl
           
-          # Fix: Ensure ESL files have newer timestamps than CRTs so make treats them as up-to-date
-          touch PK.esl KEK.esl DB.esl
+          # 4. Ensure ESL files are 'new' (timestamp = NOW)
+          # Logic: Target (ESL, now) > Prerequisite (CRT/Tool, old) => Skip Regeneration
+          touch *.esl
           
-          # Build LockDown with embedded .esl files
+          # 5. Build LockDown with embedded .esl files
           make ENABLE_LOCKDOWN=1
           
           # Sign the LockDown.efi
