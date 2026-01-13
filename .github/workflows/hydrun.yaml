@@ -131,7 +131,34 @@ jobs:
           cert-to-efi-sig-list -g "$GUID" KEK.crt KEK-ipxe.esl
           cert-to-efi-sig-list -g "$GUID" DB.crt DB-ipxe.esl
           
-          echo "✓ EFI Signature Lists created"
+          # --- Include Extra Keys from Repository (e.g. Microsoft KEK/DB) ---
+          ESL_DIR="securebootsigning/eslfiles"
+          
+          if [ ! -d "$ESL_DIR" ]; then
+             echo "❌ Error: $ESL_DIR directory not found!"
+             exit 1
+          fi
+            
+          echo "Searching for extra keys in $ESL_DIR..."
+          
+          # Append KEKs (checking for both "KEK_" and "kek_" prefixes if needed, but your files use KEK_)
+          for f in "$ESL_DIR"/[Kk][Ee][Kk]_*.esl; do
+              if [ -f "$f" ]; then
+                  echo "  -> Appending KEK: $(basename "$f")"
+                  cat "$f" >> KEK-ipxe.esl
+              fi
+          done
+          
+          # Append DBs
+          for f in "$ESL_DIR"/db_*.esl; do
+              if [ -f "$f" ]; then
+                  echo "  -> Appending DB: $(basename "$f")"
+                  cat "$f" >> DB-ipxe.esl
+              fi
+          done
+          # -----------------------------------------------------------------------------
+          
+          echo "✓ EFI Signature Lists created (Extra keys appended successfully)"
           
           # Create output directory
           mkdir -p out
