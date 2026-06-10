@@ -52,8 +52,15 @@ if [ "$1" = "c" ]; then
 
     # Build
     EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-pcbios/ipxe.kpxe
-    EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/ipxe.efi
-    EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-x86_64-efi/ipxe.efi
+    # Use the upstream "ipxe-legacy" target (== ipxe.efi minus DRIVERS_usb_net).
+    # As of iPXE 2.0.0, the all-drivers ipxe.efi pulls in USB network drivers,
+    # which drag in the native USB host-controller stack (xHCI/EHCI/UHCI). That
+    # stack seizes the USB controller from UEFI firmware and breaks the firmware
+    # USB keyboard (in iPXE and anything it chainloads). The legacy target drops
+    # only the USB-net drivers, so the firmware keeps the keyboard. We don't boot
+    # over USB NICs, so this costs us nothing.
+    EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-i386-efi/ipxe-legacy.efi
+    EMBEDDED_MAKE CROSS_COMPILE="ccache " bin-x86_64-efi/ipxe-legacy.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache arm-linux-gnueabi-" ARCH=arm32 bin-arm32-efi/snp.efi
     EMBEDDED_MAKE CROSS_COMPILE="ccache aarch64-linux-gnu-" ARCH=arm64 bin-arm64-efi/snp.efi
     
@@ -73,8 +80,9 @@ if [ "$1" = "c" ]; then
     OUTPUT_DIR="../../out"
     mkdir -p "$OUTPUT_DIR"
     cp bin-i386-pcbios/ipxe.kpxe "$OUTPUT_DIR/ipxe-i386.kpxe"
-    cp bin-i386-efi/ipxe.efi "$OUTPUT_DIR/ipxe-i386.efi"
-    cp bin-x86_64-efi/ipxe.efi "$OUTPUT_DIR/ipxe-x86_64.efi"
+    # Ship the legacy (no-USB-net) EFI builds under the usual output names.
+    cp bin-i386-efi/ipxe-legacy.efi "$OUTPUT_DIR/ipxe-i386.efi"
+    cp bin-x86_64-efi/ipxe-legacy.efi "$OUTPUT_DIR/ipxe-x86_64.efi"
     cp bin-arm32-efi/snp.efi "$OUTPUT_DIR/ipxe-arm32.efi"
     cp bin-arm64-efi/snp.efi "$OUTPUT_DIR/ipxe-arm64.efi"
     
